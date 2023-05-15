@@ -1,20 +1,29 @@
-# ( 골1) __codetree_포탑부수기
+# (3, 골1) 구현,bfs__codetree_포탑부수기
 
-
-# N * M grid
-
-# 각 포탑 [공격력, 공격 시점]
-# - 공격력 <= 0 이면 부서짐)
+import heapq
 
 # === input ===
 N, M, K = map(int, input().split())
 board = [list(map(lambda x: [int(x), 0], input().split())) for _ in range(N)]
 WALL = 0
 POWER, TIME = 0, 1
+weak_pq = []
+strong_pq = []
 
 
 # === algorithm ===
 # 하나의 턴
+def init():
+    global weak_pq, strong_pq
+    for r in range(N):
+        for c in range(M):
+            if board[r][c][POWER] == 0:
+                board[r][c] = WALL
+            else:
+                heapq.heappush(weak_pq, (board[r][c][POWER], -board[r][c][TIME], -(r + c), -c))
+                heapq.heappush(strong_pq, (-board[r][c][POWER], board[r][c][TIME], (r + c), c))
+
+
 # 1. 공격자 선정: 가장 약한 포탑 + (N+M)
 def find_weakest() -> list:
     ret_loc = [0, 0]
@@ -106,12 +115,14 @@ def attack(weakest_loc, strongest_loc, time) -> set:
         path[weakest_loc[0]][weakest_loc[1]] = [weakest_loc]
 
         while queue:
+            # print(queue)
             r, c = queue.pop(0)
             curr_path = path[r][c]
+            # print(f"[{r, c}], {curr_path}")
             if [r, c] == list(strongest_loc):
                 ret_list = curr_path[1:]
 
-            for dr, dc in [[0, 1], [-1, 0], [0, -1], [1, 0]]:
+            for dr, dc in [[0, 1], [1, 0], [0, -1], [-1, 0]]:
                 nr, nc = (r + dr) % N, (c + dc) % M
                 if board[nr][nc] != WALL and path[nr][nc] == []:
                     queue.append([nr, nc])
@@ -203,7 +214,10 @@ def one_round(ith) -> bool:
 
     # print(f"\nw: {weakest_loc}, s: {strongest_loc}")
     # for r in range(N):
-    #     print(*board[r])
+    #     for c in range(M):
+    #         tmp = board[r][c][0] if board[r][c] != WALL else "_"
+    #         print(f"{tmp:>2}", end=" ")
+    #     print()
 
     return True
 
@@ -223,7 +237,7 @@ def get_strongest_power() -> int:
 
 # === output ===
 # K 라운드 진행
-destroy()
+init()
 for k in range(K):
     if not one_round(k + 1):
         break
