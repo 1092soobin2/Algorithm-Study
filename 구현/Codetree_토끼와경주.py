@@ -18,19 +18,21 @@ def init():
     N, M = input_line[1], input_line[2]
     P = input_line[3]
 
-    # Make board
     # Make rabbit dictionary
     for p in range(P):
         rid, speed = input_line[4 + 2*p], input_line[4 + 2*p + 1]
         cnt, r, c, score = 0, 0, 0, 0
         rabbit_dict[rid] = [speed, cnt, [r, c], score]
-        heapq.heappush(jump_pq, (cnt, r + c, r, c, rid))
+        jump_pq.append((cnt, r + c, r, c, rid))
+
+    heapq.heapify(jump_pq)
 
 
 def play_game(repeat, bonus):
-    global rabbit_dict
+    global rabbit_dict, jump_pq
 
     jump_rabbit_set = set()
+    total_score = 0
 
     def get_next_loc() -> list:
         loc, speed = rabbit_dict[rabbit_id][LOC], rabbit_dict[rabbit_id][SPEED]
@@ -59,11 +61,12 @@ def play_game(repeat, bonus):
             return at
 
         for dr, dc in [[-1, 0], [0, -1], [1, 0], [0, 1]]:
+            # 다음 위치 구하기
             if dr != 0:
-                # 다음 위치
                 nr, nc = move_to(dr, loc[0], N, speed % ((N - 1) * 2)), loc[1]
             else:
                 nr, nc = loc[0], move_to(dc, loc[1], M, speed % ((M - 1) * 2))
+            # 위치 우선 순위
             heapq.heappush(loc_pq, (-(nr + nc), -nr, -nc))
 
         return [-loc_pq[0][1], -loc_pq[0][2]]
@@ -87,10 +90,17 @@ def play_game(repeat, bonus):
 
         # 3. 점수 업데이트
         # 점프한 토끼를 제외한 나머지 토끼가 (r + c)만큼의 점수를 얻게 됨
-        for rid in rabbit_dict:
-            if rid == rabbit_id:
-                continue
-            rabbit_dict[rid][SCORE] += sum(next_loc) + 2
+
+        # for rid in rabbit_dict:
+        #     if rid == rabbit_id:
+        #         continue
+        #     rabbit_dict[rid][SCORE] += sum(next_loc) + 2
+        total_score += sum(next_loc) + 2
+        rabbit_dict[rabbit_id][SCORE] -= (sum(next_loc) + 2)
+
+    # 3. 점수 업데이
+    for rid in rabbit_dict:
+        rabbit_dict[rid][SCORE] += total_score
 
     # 4. 종료  보너스 점수
     # (-(r + c), -r, -c, rid)
@@ -116,12 +126,11 @@ def modify_speed(rabbit_id, multiple):
 
 # 최고의 토끼 선정 -> 가장 높은 점수
 def finish():
-    best_rabbit = [0, 0]
+    best_score = 0
     for rid in rabbit_dict:
-        if rabbit_dict[rid][SCORE] > best_rabbit[1]:
-            best_rabbit = [rid, rabbit_dict[rid][SCORE]]
+        best_score = max(best_score, rabbit_dict[rid][SCORE])
 
-    print(best_rabbit[1])
+    print(best_score)
 
 
 def print_arr(arr):
@@ -142,5 +151,4 @@ for q in range(Q - 2):
         modify_speed(arg1, arg2)
     else:
         print("n/a command")
-    # print(command, arg1, arg2)
 finish()
