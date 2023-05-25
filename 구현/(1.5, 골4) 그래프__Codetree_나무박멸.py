@@ -1,17 +1,4 @@
-# (1, 골4) __Codetree_나무박멸
-
-
-# n*n grid
-# 나무 개수
-# 벽 정보
-
-# 제초제
-# - k만큼
-# - 대각선으로
-# - 퍼짐
-
-
-
+# (1.5, 골4) 그래프__Codetree_나무박멸
 
 # === input ===
 N, M, K, C = map(int, input().split())
@@ -59,7 +46,7 @@ def propagate():
                         adj_loc.append([nr, nc])
                 if adj_loc:
                     for nr, nc in adj_loc:
-                        new_grid[nr][nc] += new_grid[r][c] // len(adj_loc)
+                        new_grid[nr][nc] += grid[r][c] // len(adj_loc)
             # 벽 복사
             elif grid[r][c] == WALL:
                 new_grid[r][c] = WALL
@@ -74,28 +61,30 @@ def propagate():
 def inject() -> int:
     global injected, grid
 
-    def spread(curr_r, curr_c, dr, dc, acc, inject_flag=False):
+    def spread(r, c, inject_flag=False) -> int:
+        ret_removed = grid[r][c]
 
-        # 제초제는 k만큼 전파됨
-        if acc == K or not (0 <= curr_r < N and 0 <= curr_c < N):
-            return 0
-
-        # 나무 X칸 or 벽 -> 전파가 멈춤, 이 칸까지는 뿌려짐
-        if grid[curr_r][curr_c] <= 0:
-            ret = 0
-        # 나무 O 칸 -> 대각선
-        else:
-            ret = grid[curr_r][curr_c] + spread(curr_r + dr, curr_c + dc, dr, dc, acc + 1)
-
-        # 제초제 뿌리기
         if inject_flag:
-            if debug:
-                print(f"{acc + 1}th", curr_r, curr_c)
-                print_debug()
-            grid[curr_r][curr_c] = 0
-            injected[curr_r][curr_c] = C
+            grid[r][c] = 0
+            injected[r][c] = C
 
-        return ret
+        for dr, dc in [[-1, -1], [1, -1], [-1, 1], [1, 1]]:
+            tr, tc = r, c
+            for _ in range(K):
+                tr, tc = tr + dr, tc + dc
+                if 0 <= tr < N and 0 <= tc < N:
+
+                    if grid[tr][tc] <= 0:
+                        if inject_flag:
+                            injected[tr][tc] = C
+                        break
+                    else:
+                        if inject_flag:
+                            grid[tr][tc] = 0
+                            injected[tr][tc] = C
+                        ret_removed += grid[tr][tc]
+
+        return ret_removed
 
     # 1년 지남
     for r in range(N):
@@ -110,20 +99,13 @@ def inject() -> int:
         for c in range(N):
             # 대각선으로 퍼짐
             if grid[r][c] > 0:
-                removed = grid[r][c]
-                for direction in [[-1, -1], [1, -1], [-1, 1], [1, 1]]:
-                    removed += spread(r + direction[0], c + direction[1], *direction, 0)
-                if debug:
-                    print([r, c], removed)
+                removed = spread(r, c)
                 if max_removed < removed:
                     max_removed = removed
                     inject_loc = [r, c]
 
     # 제초제 뿌리기
-    grid[inject_loc[0]][inject_loc[1]] = 0
-    injected[inject_loc[0]][inject_loc[1]] = C
-    for direction in [[-1, -1], [1, -1], [-1, 1], [1, 1]]:
-        spread(inject_loc[0] + direction[0], inject_loc[1] + direction[1], *direction, 0, inject_flag=True)
+    spread(*inject_loc, inject_flag=True)
 
     if debug:
         print_debug(f"inject_loc{inject_loc}")
@@ -144,7 +126,7 @@ def print_debug(title=""):
 
 # === output ===
 # ans: M년 동안 박멸한 나무 그루 수
-debug = True
+debug = False
 answer = 0
 for _ in range(M):
     grow()
