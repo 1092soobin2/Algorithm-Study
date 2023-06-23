@@ -16,6 +16,9 @@ hospital_list = []
 
 
 # === algorithm ===
+MAX = 1e9
+
+
 def init():
     global hospital_list
 
@@ -75,16 +78,21 @@ def bfs(start_list) -> int:
                     queue.append([nr, nc])
                     visited[nr][nc] = curr_visited + 1
 
+    for r in range(N):
+        for c in range(N):
+            if BOARD[r][c] == 0 and visited[r][c] == -1:
+                return MAX
+
     return ret_int
 
 
 # === output ===
 # ans: 바이러스를 전부 없애는 데 걸리는 시간 중 최소 시간
 
-DEBUG = True
+DEBUG = False
 
-ans = 1e7
+ans = MAX
 init()
 for m_hospital_list in comb(hospital_list, M):
     ans = min(ans, bfs(m_hospital_list))
-print(ans)
+print(ans if ans != MAX else -1)
