@@ -1,4 +1,4 @@
-use titanic;
+ㅈuse titanic;
 
 CREATE TABLE titanic_data (
 	passenger_id 	SMALLINT,
