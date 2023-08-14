@@ -27,9 +27,9 @@ def init():
         # heapq.heappush(virus_board[r-1][c-1], age)
         virus_board[r-1][c-1].append(age)
 
-    for r in range(N):
-        for c in range(N):
-            virus_board[r][c] = deque(sorted(virus_board[r][c]))
+    # for r in range(N):
+    #     for c in range(N):
+    #         virus_board[r][c] = deque(sorted(virus_board[r][c]))
 
     print_debug("after init")
 
@@ -48,7 +48,7 @@ def eat_essence():
                     essence_board[r][c] -= virus_age
                     new_virus_list.append(virus_age + 1)
                 else:
-                    new_essence = virus_age // 2
+                    new_essence += virus_age // 2
             virus_board[r][c] = new_virus_list
             essence_board[r][c] += new_essence
     print_debug(f"after eat_essence()")
@@ -114,5 +114,5 @@ def print_debug(title=""):
 
 # === output ===
 DEBUG = False
-DEBUG = True
+# DEBUG = True
 print(solution())
