@@ -1,0 +1,26 @@
+from collections import deque
+
+
+N = int(input())
+grid = [list(map(int, input().split())) for _ in range(N)]
+
+
+def bfs(start):
+
+    queue = deque([start])
+    max_grid = [[0] * N for _ in range(N)]
+    max_grid[start[0]][start[1]] = grid[start[0]][start[1]]
+
+    while queue:
+        r, c = queue.popleft()
+
+        for dr, dc in [[-1, 0], [0, 1], [-2, 0], [0, 2]]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < N and 0 <= nc < N:
+                if max_grid[nr][nc] == 0:
+                    queue.append([nr, nc])
+                max_grid[nr][nc] = max(max_grid[nr][nc], max_grid[r][c] + (grid[nr][nc] * abs(dr + dc)))
+            
+    return max_grid[0][N - 1]
+
+print(bfs([N - 1, 0]))
