@@ -1,6 +1,6 @@
 # (0.5, 골3) BOJ_23288_주사위굴리기2
 
-# 22:45~ 23:15
+# 23:05~
 
 # N*M grid [1,1 ~]
 
@@ -10,6 +10,8 @@
     # 1) A > B -> 이동 방향 시계 방향으로 회전
     # 2) A < B -> counter clockwise
     # 3) A == b -> 변화 x
+
+from collections import deque
 
 
 # === input ===
@@ -102,13 +104,27 @@ def get_score(dice: Dice) -> int:
     if memo_grid[dice.r][dice.c] != 0:
         return memo_grid[dice.r][dice.c]
 
+    loc_set = {(dice.r, dice.c)}
 
     def bfs():
-        queue=
+        queue = deque([[dice.r, dice.c]])
+        visited = [[False] * M for _ in range(N)]
+        visited[dice.r][dice.c] = True
 
+        while queue:
+            r, c = queue.popleft()
 
-    score  = bfs() * GRID[dice.r][dice.c]
-    memo_grid[dice.r][dice.c] = score
+            for dr, dc in DIRECTION_LIST:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < N and 0 <= nc < M and not visited[nr][nc] and GRID[nr][nc] == GRID[dice.r][dice.c]:
+                    queue.append([nr, nc])
+                    loc_set.add((nr, nc))
+                    visited[nr][nc] = True
+
+    bfs()
+    score = len(loc_set) * GRID[dice.r][dice.c]
+    for grid_r, gird_c in list(loc_set):
+        memo_grid[grid_r][gird_c] = score
     return score
 
 
@@ -118,7 +134,7 @@ def solution():
     dice = Dice()
     for _ in range(K):
         dice.move_dice()
-        answer = get_score(dice)
+        answer += get_score(dice)
 
     return answer
 
