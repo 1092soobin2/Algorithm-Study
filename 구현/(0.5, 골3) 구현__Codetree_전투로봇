@@ -1,0 +1,92 @@
+# 23:05 ~
+
+import heapq
+from collections import deque
+
+# === input ===
+N = int(input())
+grid = [list(map(int, input().split()))for _ in range(N)]
+
+
+# === algorithm ===
+class Robot:
+    loc = [0, 0]
+    level = 2
+    killed = 0
+
+    @classmethod
+    def get_next_monster(cls) -> int:
+        global grid
+
+        def bfs():
+            pq = []
+
+            visited = [[-1] * N for _ in range(N)]
+            queue = deque([cls.loc])
+            visited[cls.loc[0]][cls.loc[1]] = 0
+            
+            while queue:
+                r, c = queue.popleft()
+                curr_v = visited[r][c]
+
+                if pq and pq[0][0] > curr_v:
+                    break
+
+                if 0 < grid[r][c] < cls.level:
+                    heapq.heappush(pq, (curr_v, r, c))
+
+                for dr, dc in [[-1, 0], [0, -1], [1, 0], [0, 1]]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < N and 0 <= nc < N and grid[nr][nc] <= cls.level and visited[nr][nc] == -1:
+                        queue.append([nr, nc])
+                        visited[nr][nc] = curr_v + 1
+            
+            if pq:
+                return pq[0]
+            else:
+                return None
+        
+        next_monster_loc = bfs()
+        if not next_monster_loc:
+            return 0
+        
+        cls.loc = next_monster_loc[1:]
+        cls.killed += 1
+        grid[cls.loc[0]][cls.loc[1]] = 0
+        if cls.killed == cls.level:
+            cls.level += 1
+            cls.killed = 0
+
+        return next_monster_loc[0]
+
+
+
+
+def init():
+    global grid
+    
+    for r in range(N):
+        for c in range(N):
+            if grid[r][c] == 9:
+                Robot.loc = [r, c]
+                grid[r][c] = 0
+                return
+
+
+
+def solution():
+    init()
+    
+    total_time = 0
+
+    while True:
+        time = Robot.get_next_monster()
+        if time == 0:
+            break
+        total_time += time
+
+    return total_time
+
+
+# === output ===
+print(solution())
